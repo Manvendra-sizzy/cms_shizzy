@@ -15,7 +15,7 @@ class ZohoIntegrationController extends Controller
             'state' => [
                 'client_id' => (string) $request->old('client_id', '1000.E91E9XTLWAR97KXQ5E8WRFWN6QLO1C'),
                 'client_secret' => (string) $request->old('client_secret', ''),
-                'redirect_uri' => (string) $request->old('redirect_uri', 'https://phplaravel-1387003-6316377.cloudwaysapps.com/zoho/callback'),
+                'redirect_uri' => (string) $request->old('redirect_uri', env('ZOHO_REDIRECT_URI', 'https://cms.shizzy.in/zoho/callback')),
                 'accounts_server' => (string) $request->old('accounts_server', 'https://accounts.zoho.in'),
                 'scope' => (string) $request->old('scope', 'ZohoBooks.fullaccess.all'),
                 'auth_code' => (string) $request->old('auth_code', (string) $request->query('code', '')),
