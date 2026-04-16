@@ -64,14 +64,6 @@ class HREmployeeDetailsUpdatesController extends Controller
                 $request->validate(['value' => ['required', 'string', 'max:255']]);
                 $employeeProfile->user->update(['name' => $new]);
                 break;
-            case 'codename':
-                $old = (string) ($employeeProfile->user->codename ?? '');
-                $request->validate([
-                    'value' => ['required', 'string', 'max:120', 'regex:/^[A-Za-z]+$/', 'unique:users,codename,' . $employeeProfile->user_id],
-                ]);
-                $new = trim((string) $value);
-                $employeeProfile->user->update(['codename' => $new]);
-                break;
             case 'personal_email':
                 $old = (string) ($employeeProfile->personal_email ?? '');
                 $new = (string) $value;

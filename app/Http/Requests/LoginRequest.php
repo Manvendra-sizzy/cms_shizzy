@@ -26,20 +26,7 @@ class LoginRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                'regex:/^\S+$/',
-                function (string $attribute, mixed $value, \Closure $fail): void {
-                    $login = (string) $value;
-                    if (str_contains($login, '@')) {
-                        if (! filter_var($login, FILTER_VALIDATE_EMAIL)) {
-                            $fail('Enter a valid email address.');
-                        }
-                        return;
-                    }
-
-                    if (! preg_match('/^[A-Za-z]+$/', $login)) {
-                        $fail('Codename must contain letters only (no spaces, numbers, or symbols).');
-                    }
-                },
+                'email',
             ],
             'password' => ['required', 'string', 'min:6'],
             'remember_device' => ['nullable', 'boolean'],

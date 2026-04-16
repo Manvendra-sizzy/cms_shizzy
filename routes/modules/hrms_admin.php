@@ -11,6 +11,8 @@ use App\Http\Controllers\HRMS\HREmployeeUploadedDocumentsController;
 use App\Http\Controllers\HRMS\HRHolidayCalendarController;
 use App\Http\Controllers\HRMS\HRLeaveApprovalsController;
 use App\Http\Controllers\HRMS\HRReimbursementApprovalsController;
+use App\Http\Controllers\HRMS\HREmploymentAgreementController;
+use App\Http\Controllers\HRMS\HROnboardingsController;
 use App\Http\Controllers\HRMS\HRLeavePoliciesController;
 use App\Http\Controllers\HRMS\HRPayrollController;
 use App\Http\Controllers\HRMS\HRPoliciesGuidelinesController;
@@ -22,6 +24,22 @@ Route::prefix('admin/hrms')
     ->name('admin.hrms.')
     ->group(function () {
         Route::get('/dashboard', [HRDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/onboardings', [HROnboardingsController::class, 'index'])->name('onboardings.index');
+        Route::get('/onboardings/create', [HROnboardingsController::class, 'create'])->name('onboardings.create');
+        Route::post('/onboardings', [HROnboardingsController::class, 'store'])->name('onboardings.store');
+        Route::get('/onboardings/{onboarding}', [HROnboardingsController::class, 'show'])->name('onboardings.show');
+        Route::post('/onboardings/{onboarding}/resend-link', [HROnboardingsController::class, 'resendLink'])->name('onboardings.resend_link');
+        Route::post('/onboardings/{onboarding}/approve', [HROnboardingsController::class, 'approve'])->name('onboardings.approve');
+        Route::post('/onboardings/{onboarding}/reject', [HROnboardingsController::class, 'reject'])->name('onboardings.reject');
+        Route::post('/onboardings/{onboarding}/send-agreement', [HROnboardingsController::class, 'sendAgreement'])->name('onboardings.send_agreement');
+        Route::post('/onboardings/{onboarding}/send-inbuilt-contract', [HROnboardingsController::class, 'sendInbuiltContract'])->name('onboardings.send_inbuilt_contract');
+        Route::get('/onboardings/{onboarding}/inbuilt-signed-contract', [HROnboardingsController::class, 'downloadInbuiltSignedContract'])->name('onboardings.inbuilt_signed_contract');
+        Route::post('/onboardings/{onboarding}/agreement-details', [HROnboardingsController::class, 'saveAgreementDetails'])->name('onboardings.agreement_details');
+        Route::post('/onboardings/{onboarding}/sync-zoho', [HROnboardingsController::class, 'syncZohoStatus'])->name('onboardings.sync_zoho');
+        Route::get('/onboardings/{onboarding}/signed-agreement', [HROnboardingsController::class, 'downloadSignedAgreement'])->name('onboardings.signed_agreement');
+
+        Route::get('/employment-agreement', [HREmploymentAgreementController::class, 'edit'])->name('employment_agreement.edit');
+        Route::put('/employment-agreement', [HREmploymentAgreementController::class, 'update'])->name('employment_agreement.update');
 
         Route::get('/employees', [HREmployeesController::class, 'index'])->name('employees.index');
         Route::get('/employees/create', [HREmployeesController::class, 'create'])->name('employees.create');
@@ -31,6 +49,7 @@ Route::prefix('admin/hrms')
         Route::get('/employees/uploaded-documents/{employeeUploadedDocument}/download', [HREmployeeUploadedDocumentsController::class, 'download'])->name('employees.uploaded_documents.download');
         Route::get('/employees/{employeeProfile}', [HREmployeesController::class, 'show'])->name('employees.show');
         Route::post('/employees/{employeeProfile}/reset-password', [HREmployeesController::class, 'resetPassword'])->name('employees.password.reset');
+        Route::post('/employees/{employeeProfile}/convert-to-permanent', [HREmployeesController::class, 'convertToPermanent'])->name('employees.convert_to_permanent');
         // Employee edit is replaced by per-field updates + logs.
         Route::get('/employees/{employeeProfile}/update-details', [HREmployeeDetailsUpdatesController::class, 'index'])->name('employees.update_details.index');
         Route::post('/employees/{employeeProfile}/update-details', [HREmployeeDetailsUpdatesController::class, 'update'])->name('employees.update_details.update');

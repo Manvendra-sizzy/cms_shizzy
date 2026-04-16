@@ -359,16 +359,27 @@
             min-height: 40px;
         }
         .btn:hover {
+            color: #fff;
+            text-decoration: none;
             filter: brightness(1.03) saturate(1.05);
             box-shadow: 0 14px 28px rgba(37,99,235,.34), inset 0 1px 0 rgba(255,255,255,.32);
             transform: translateY(-1px);
+        }
+        a.btn:focus-visible {
+            color: #fff;
+            outline: 2px solid rgba(37, 99, 235, 0.55);
+            outline-offset: 2px;
         }
         .btn.danger {
             border-color: #b91c1c;
             background: linear-gradient(180deg, #ef4444, #dc2626);
             box-shadow: 0 10px 20px rgba(220,38,38,.24), inset 0 1px 0 rgba(255,255,255,.24);
         }
-        .btn.danger:hover { box-shadow: 0 14px 26px rgba(220,38,38,.32), inset 0 1px 0 rgba(255,255,255,.26); }
+        .btn.danger:hover {
+            color: #fff;
+            text-decoration: none;
+            box-shadow: 0 14px 26px rgba(220,38,38,.32), inset 0 1px 0 rgba(255,255,255,.26);
+        }
         .flash {
             margin: 10px 0 0;
             padding: 11px 13px;
@@ -550,6 +561,10 @@
 
         @if (session('status'))
             <div class="flash">{{ session('status') }}</div>
+        @endif
+
+        @if (session('warning'))
+            <div class="flash" style="background:#fff7ed;border-color:#fdba74;color:#9a3412;">{{ session('warning') }}</div>
         @endif
 
         @if (isset($errors) && $errors->any())

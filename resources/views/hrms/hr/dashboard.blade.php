@@ -145,16 +145,22 @@
     <div class="card" style="margin-top:14px;">
         <h1>Quick links</h1>
         <div class="row">
-            <a class="pill" href="{{ route('admin.hrms.documents.index') }}">Documents</a>
-            <a class="pill" href="{{ route('admin.hrms.leave_policies.index') }}">Leave Policies</a>
-            <a class="pill" href="{{ route('admin.hrms.reimbursement_approvals.index') }}">Reimbursement approvals</a>
-            <a class="pill" href="{{ route('admin.hrms.policies_guidelines.index') }}">Policies &amp; Guidelines</a>
-            <a class="pill" href="{{ route('admin.hrms.calendar.index') }}">Calendar</a>
-            <a class="pill" href="{{ route('admin.hrms.payroll.index') }}">Payroll</a>
             <a class="pill" href="{{ route('admin.hrms.employees.create') }}">Add Employee</a>
             <a class="pill" href="{{ route('admin.hrms.attendance.index') }}">Attendance</a>
-            <a class="pill" href="{{ route('admin.hrms.employees.attendance_locks.index') }}">Attendance Locks</a>
             <a class="pill" href="{{ route('admin.hrms.attendance_adjustments.index') }}">Attendance Adjustment</a>
+            <a class="pill" href="{{ route('admin.hrms.employees.attendance_locks.index') }}">Attendance Locks</a>
+            <a class="pill" href="{{ route('admin.hrms.calendar.index') }}">Calendar</a>
+            <a class="pill" href="{{ route('admin.hrms.documents.index') }}">Documents</a>
+            @if(\Illuminate\Support\Facades\Route::has('admin.hrms.employment_agreement.edit'))
+                <a class="pill" href="{{ route('admin.hrms.employment_agreement.edit') }}">Employment agreement</a>
+            @endif
+            <a class="pill" href="{{ route('admin.hrms.leave_policies.index') }}">Leave Policies</a>
+            @if(\Illuminate\Support\Facades\Route::has('admin.hrms.onboardings.index'))
+                <a class="pill" href="{{ route('admin.hrms.onboardings.index') }}">Onboarding</a>
+            @endif
+            <a class="pill" href="{{ route('admin.hrms.payroll.index') }}">Payroll</a>
+            <a class="pill" href="{{ route('admin.hrms.policies_guidelines.index') }}">Policies &amp; Guidelines</a>
+            <a class="pill" href="{{ route('admin.hrms.reimbursement_approvals.index') }}">Reimbursement approvals</a>
         </div>
     </div>
 @endsection

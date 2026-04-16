@@ -22,11 +22,17 @@
                 <div style="flex:1;min-width:0;">
                     <div style="font-size:18px;font-weight:600;">{{ $profile->user?->name ?? '—' }}</div>
                     <div class="muted" style="margin-top:4px;">{{ $profile->employee_id }}</div>
+                    <div style="margin-top:8px;">
+                        <span style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;background:#ecfeff;color:#155e75;border:1px solid #a5f3fc;">
+                            {{ $profile->badgeLabel() }}
+                        </span>
+                    </div>
 
                     <div class="row" style="margin-top:10px;gap:16px;">
                         <div><span class="muted">Department</span><div><strong>{{ $profile->orgDepartment?->name ?? '—' }}</strong></div></div>
                         <div><span class="muted">Designation</span><div><strong>{{ $profile->orgDesignation?->name ?? '—' }}</strong></div></div>
                         <div><span class="muted">Reporting manager</span><div><strong>{{ $profile->reportingManager?->user?->name ?? '—' }}</strong></div></div>
+                        <div><span class="muted">Employee type</span><div><strong>{{ \App\Services\HRMS\EmployeeLifecycleService::employeeTypeLabels()[$profile->employee_type ?? ''] ?? '—' }}</strong></div></div>
                     </div>
                 </div>
             </div>

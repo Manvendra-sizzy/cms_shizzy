@@ -37,7 +37,6 @@ class AuthController extends Controller
         /** @var User|null $candidate */
         $candidate = User::query()
             ->where('email', $loginId)
-            ->orWhereRaw('LOWER(codename) = ?', [mb_strtolower($loginId)])
             ->first();
 
         if (! $candidate || ! Auth::attempt(['email' => $candidate->email, 'password' => $password], $rememberDevice)) {

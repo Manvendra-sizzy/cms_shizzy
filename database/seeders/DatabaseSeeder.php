@@ -69,5 +69,7 @@ class DatabaseSeeder extends Seeder
             ['code' => 'HRM'],
             ['name' => 'HR Manager', 'active' => true],
         );
+
+        $this->call(EmploymentAgreementContentSeeder::class);
     }
 }

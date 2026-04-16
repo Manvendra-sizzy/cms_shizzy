@@ -10,7 +10,11 @@
             <div>
                 <h1 style="margin:0;">{{ $employee->user->name }} <span class="muted">({{ $employee->employee_id }})</span></h1>
                 <div class="muted" style="margin-top:4px;">{{ $employee->user->email }}</div>
-                <div class="muted" style="margin-top:2px;">Codename: <strong>{{ $employee->user->codename ?? '—' }}</strong></div>
+                <div style="margin-top:8px;">
+                    <span style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;background:#ecfeff;color:#155e75;border:1px solid #a5f3fc;">
+                        {{ $employee->badgeLabel() }}
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -27,6 +31,9 @@
             </div>
             <div><span class="muted">Designation</span><div><strong>{{ $employee->orgDesignation?->name ?? '—' }}</strong></div></div>
             <div><span class="muted">Status</span><div><strong>{{ $employee->status }}</strong></div></div>
+            <div><span class="muted">Employee type</span><div><strong>{{ \App\Services\HRMS\EmployeeLifecycleService::employeeTypeLabels()[$employee->employee_type ?? ''] ?? '—' }}</strong></div></div>
+            <div><span class="muted">Internship period</span><div><strong>{{ $employee->internship_period_months ? ($employee->internship_period_months . ' month(s)') : '—' }}</strong></div></div>
+            <div><span class="muted">Probation period</span><div><strong>{{ $employee->probation_period_months ? ($employee->probation_period_months . ' month(s)') : '—' }}</strong></div></div>
             <div><span class="muted">Remote</span><div><strong>{{ $employee->is_remote ? 'Yes' : 'No' }}</strong></div></div>
         </div>
 
@@ -45,6 +52,33 @@
             <a class="pill" href="{{ route('admin.hrms.leave_approvals.index') }}">Leave Approvals</a>
             <a class="pill" href="{{ route('admin.hrms.employees.salary_slips.index', $employee) }}">Salary Slips</a>
             <a class="pill" href="{{ route('admin.hrms.employees.update_details.index', $employee) }}">Update Details</a>
+        </div>
+
+        <div style="margin-top:12px;padding:12px;border-radius:14px;border:1px solid rgba(0,0,0,.08);background:#f8fafc;">
+            <h2 style="margin:0 0 8px;">Lifecycle Conversion</h2>
+            @if($employee->isIntern())
+                @if($conversionEligibility['allowed'])
+                    <p class="muted" style="margin:0 0 10px;line-height:1.5;">Their intern ID (e.g. EXI###) will be replaced with the next available permanent ID (EXE###), same sequence as new employees.</p>
+                    <form method="post" action="{{ route('admin.hrms.employees.convert_to_permanent', $employee) }}" class="row" style="gap:10px;align-items:flex-end;">
+                        @csrf
+                        <div class="field" style="margin:0;">
+                            <label>Effective date</label>
+                            <input type="date" name="effective_date" value="{{ old('effective_date', now()->toDateString()) }}" required>
+                        </div>
+                        <div class="field" style="margin:0;">
+                            <label>Probation period (months)</label>
+                            <input type="number" name="probation_period_months" min="1" max="36" value="{{ old('probation_period_months', 3) }}" required>
+                        </div>
+                        <div>
+                            <button type="submit" class="pill" onclick="return confirm('Convert this intern to Permanent Employee?');">Convert to Permanent Employee</button>
+                        </div>
+                    </form>
+                @else
+                    <p class="muted" style="margin:0;">{{ $conversionEligibility['reason'] ?? 'Conversion not available.' }}</p>
+                @endif
+            @else
+                <p class="muted" style="margin:0;">This employee is not an intern.</p>
+            @endif
         </div>
     </div>
 
@@ -120,7 +154,6 @@
                     <tr>
                         <th>ID</th>
                         <th>Type</th>
-                        <th>Title</th>
                         <th>Issued</th>
                         <th></th>
                     </tr>
@@ -129,8 +162,7 @@
                     @foreach($documents as $doc)
                         <tr>
                             <td class="muted">{{ $doc->id }}</td>
-                            <td><strong>{{ str_replace('_', ' ', ucwords($doc->type, '_')) }}</strong></td>
-                            <td class="muted">{{ $doc->title }}</td>
+                            <td><strong>{{ $doc->typeLabel() }}</strong></td>
                             <td class="muted">{{ optional($doc->issued_at)->format('Y-m-d') ?? '—' }}</td>
                             <td><a class="pill" href="{{ route('admin.hrms.documents.download', $doc) }}">Download</a></td>
                         </tr>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Modules\HRMS\Documents\Models\HRDocument;
 use App\Modules\HRMS\Employees\Models\EmployeeProfile;
+use App\Services\HRMS\DocumentEligibilityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Mail\HrDocumentIssuedMail;
+use Illuminate\Validation\Rule;
 
 class HRDocumentsController extends Controller
 {
@@ -30,26 +32,51 @@ class HRDocumentsController extends Controller
     {
         $employees = EmployeeProfile::query()->with('user')->orderBy('employee_id')->get();
 
-        return view('hrms.hr.documents.create', ['employees' => $employees]);
+        return view('hrms.hr.documents.create', [
+            'employees' => $employees,
+            'documentTypes' => HRDocument::typeOptions(),
+        ]);
     }
 
     public function store(Request $request)
     {
+        $bodyRequiredTypes = [
+            HRDocument::TYPE_APPRECIATION_LETTER,
+            HRDocument::TYPE_SHOW_CAUSE_NOTICE,
+            HRDocument::TYPE_WARNING_LETTER,
+            HRDocument::TYPE_INTERNSHIP_APPOINTMENT_LETTER,
+        ];
+
         $data = $request->validate([
             'employee_profile_id' => ['required', 'exists:employee_profiles,id'],
-            'type' => ['required', 'string', 'max:64'],
-            'title' => ['required', 'string', 'max:255'],
-            'body' => ['nullable', 'string'],
+            'type' => ['required', 'string', 'in:' . implode(',', array_keys(HRDocument::typeOptions()))],
+            'body' => [
+                Rule::requiredIf(function () use ($request, $bodyRequiredTypes) {
+                    return in_array((string) $request->input('type'), $bodyRequiredTypes, true);
+                }),
+                'nullable',
+                'string',
+            ],
         ]);
 
         /** @var User $user */
         $user = Auth::user();
+        $employee = EmployeeProfile::query()->findOrFail((int) $data['employee_profile_id']);
+        app(\App\Services\HRMS\EmployeeLifecycleService::class)->synchronizeBadge($employee);
+        $employee->refresh();
+
+        $eligibility = app(DocumentEligibilityService::class)->canIssue($employee, (string) $data['type']);
+        if (! $eligibility['allowed']) {
+            return back()->withErrors([
+                'type' => (string) $eligibility['reason'],
+            ])->withInput();
+        }
 
         $doc = HRDocument::query()->create([
             'employee_profile_id' => (int) $data['employee_profile_id'],
             'issued_by_user_id' => $user->id,
             'type' => $data['type'],
-            'title' => $data['title'],
+            'title' => HRDocument::typeOptions()[$data['type']] ?? str_replace('_', ' ', ucwords((string) $data['type'], '_')),
             'body' => $data['body'] ?? null,
             'issued_at' => now(),
         ]);
@@ -76,7 +103,7 @@ class HRDocumentsController extends Controller
         // Notify the employee about the issued document.
         try {
             $doc->load('employeeProfile.user');
-            $email = $doc->employeeProfile?->user?->email;
+            $email = $doc->employeeProfile?->preferredNotificationEmail();
             if (is_string($email) && $email !== '') {
                 Mail::to($email)->send(new HrDocumentIssuedMail($doc));
             }

@@ -190,6 +190,61 @@ class AttendanceLeaveSummaryService
     }
 
     /**
+     * Calculate proportionate leave allowance based on employee's joining date.
+     * 
+     * @param float $annualAllowance The full year leave allowance
+     * @param string|null $joiningDate The employee's joining date (Y-m-d format)
+     * @param string $yearStart The start of the year to calculate for (Y-m-d format)
+     * @param string $yearEnd The end of the year to calculate for (Y-m-d format)
+     * @return float The proportionate allowance
+     */
+    public function calculateProportionateAllowance(float $annualAllowance, ?string $joiningDate, string $yearStart, string $yearEnd): float
+    {
+        // If no joining date, return full allowance
+        if (empty($joiningDate)) {
+            return $annualAllowance;
+        }
+
+        $joining = Carbon::parse($joiningDate)->startOfDay();
+        $yearStartDate = Carbon::parse($yearStart)->startOfDay();
+        $yearEndDate = Carbon::parse($yearEnd)->startOfDay();
+
+        // If employee joined before or at the start of the year, give full allowance
+        if ($joining->lte($yearStartDate)) {
+            return $annualAllowance;
+        }
+
+        // If employee joined after the year end, give 0 allowance
+        if ($joining->gt($yearEndDate)) {
+            return 0.0;
+        }
+
+        // Calculate total months in the year (usually 12)
+        $totalMonths = $yearStartDate->copy()->endOfYear()->month;
+        
+        // Calculate remaining months from joining date to end of year
+        // Count the joining month as a full month if joined on or before 15th
+        $joiningMonth = $joining->month;
+        $remainingMonths = 12 - $joiningMonth + 1; // +1 to include the joining month
+        
+        // If joined after 15th of the month, reduce by 1 month
+        if ($joining->day > 15) {
+            $remainingMonths = max(0, $remainingMonths - 1);
+        }
+
+        // Calculate proportionate allowance
+        $proportionateAllowance = ($annualAllowance * $remainingMonths) / 12;
+
+        // Round up only if fractional part is >= 0.75
+        $fractionalPart = $proportionateAllowance - floor($proportionateAllowance);
+        if ($fractionalPart >= 0.75) {
+            return ceil($proportionateAllowance);
+        }
+        
+        return $proportionateAllowance;
+    }
+
+    /**
      * Used days per policy for balance (year window).
      *
      * @return array<int, float> policy_id => days

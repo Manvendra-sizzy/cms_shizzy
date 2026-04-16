@@ -12,7 +12,7 @@
             <tr>
                 <th>Employee ID</th>
                 <th>Name</th>
-                <th>Codename</th>
+                <th>Badge</th>
                 <th>Email</th>
                 <th>Dept</th>
                 <th>Designation</th>
@@ -25,7 +25,11 @@
                 <tr>
                     <td><strong>{{ $emp->employee_id }}</strong></td>
                     <td>{{ $emp->user->name }}</td>
-                    <td class="muted">{{ $emp->user->codename ?? '—' }}</td>
+                    <td>
+                        <span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;">
+                            {{ $emp->badgeLabel() }}
+                        </span>
+                    </td>
                     <td class="muted">{{ $emp->user->email }}</td>
                     <td>{{ $emp->orgDepartment?->name ?? '—' }}</td>
                     <td>{{ $emp->orgDesignation?->name ?? '—' }}</td>

@@ -41,7 +41,7 @@ class EmployeeLeavesController extends Controller
         $usedByPolicyId = app(AttendanceLeaveSummaryService::class)
             ->approvedDaysUsedByPolicy($profile->id, $yearStart, $yearEnd);
 
-        $balances = $policies->map(function (LeavePolicy $policy) use ($usedByPolicyId) {
+        $balances = $policies->map(function (LeavePolicy $policy) use ($usedByPolicyId, $profile, $yearStart, $yearEnd) {
             $used = (float) ($usedByPolicyId[$policy->id] ?? 0);
             if (! $policy->is_paid) {
                 return [
@@ -51,7 +51,14 @@ class EmployeeLeavesController extends Controller
                     'remaining' => null,
                 ];
             }
-            $allowance = (float) $policy->annual_allowance;
+            // Calculate proportionate allowance based on joining date
+            $joiningDate = $profile->joining_date ?? $profile->join_date;
+            $allowance = app(AttendanceLeaveSummaryService::class)->calculateProportionateAllowance(
+                (float) $policy->annual_allowance,
+                $joiningDate ? $joiningDate->format('Y-m-d') : null,
+                $yearStart,
+                $yearEnd
+            );
             $remaining = max(0, $allowance - $used);
 
             return [

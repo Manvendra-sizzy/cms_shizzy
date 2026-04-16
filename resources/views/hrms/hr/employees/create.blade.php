@@ -9,16 +9,23 @@
             @csrf
             <div class="form-grid cols-2">
                 <div class="field">
-                    <label>Profile image (DP) (optional)</label>
-                    <input name="profile_image" type="file" accept="image/*">
+                    <label>Profile image (DP) *</label>
+                    <input name="profile_image" type="file" accept="image/*" required>
                 </div>
                 <div class="field">
                     <label>Name</label>
                     <input name="name" value="{{ old('name') }}" required>
                 </div>
                 <div class="field">
-                    <label>Harry Potter codename (login id)</label>
-                    <input name="codename" value="{{ old('codename') }}" required>
+                    <label>Employee type</label>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                        @foreach($employeeTypes as $typeKey => $typeLabel)
+                            <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid rgba(0,0,0,.12);border-radius:12px;background:#fff;">
+                                <input type="radio" name="employee_type" value="{{ $typeKey }}" @checked(old('employee_type', 'intern') === $typeKey) style="width:auto;">
+                                <span>{{ $typeLabel }}</span>
+                            </label>
+                        @endforeach
+                    </div>
                 </div>
                 <div class="field">
                     <label>Personal email address</label>
@@ -35,6 +42,19 @@
                 <div class="field">
                     <label>Password (optional)</label>
                     <input name="password" type="text" value="{{ old('password') }}">
+                </div>
+                <div class="field" id="internship-period-wrap">
+                    <label>Internship period</label>
+                    <select name="internship_period_months">
+                        <option value="">Select…</option>
+                        @foreach($internshipPeriods as $period)
+                            <option value="{{ $period }}" @selected((int) old('internship_period_months') === (int) $period)>{{ $period }} month{{ $period > 1 ? 's' : '' }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="field" id="probation-period-wrap">
+                    <label>Probation period (months)</label>
+                    <input name="probation_period_months" type="number" min="1" max="36" value="{{ old('probation_period_months') }}">
                 </div>
                 <div class="field">
                     <label>Joining date</label>
@@ -112,4 +132,42 @@
         </form>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    (function () {
+        const internWrap = document.getElementById('internship-period-wrap');
+        const probationWrap = document.getElementById('probation-period-wrap');
+        const internSelect = internWrap ? internWrap.querySelector('select') : null;
+        const probationInput = probationWrap ? probationWrap.querySelector('input') : null;
+
+        function selectedType() {
+            const checked = document.querySelector('input[name="employee_type"]:checked');
+            return checked ? checked.value : '';
+        }
+
+        function syncLifecycleFields() {
+            const type = selectedType();
+            const isIntern = type === 'intern';
+            if (internWrap) {
+                internWrap.style.display = isIntern ? '' : 'none';
+            }
+            if (probationWrap) {
+                probationWrap.style.display = isIntern ? 'none' : '';
+            }
+            if (internSelect) {
+                internSelect.disabled = !isIntern;
+            }
+            if (probationInput) {
+                probationInput.disabled = isIntern;
+            }
+        }
+
+        document.querySelectorAll('input[name="employee_type"]').forEach(function (radio) {
+            radio.addEventListener('change', syncLifecycleFields);
+        });
+        syncLifecycleFields();
+    })();
+</script>
+@endpush
 

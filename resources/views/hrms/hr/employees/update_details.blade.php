@@ -24,7 +24,6 @@
                     <select name="field" id="field" required>
                         <option value="">Select…</option>
                         <option value="name">Name</option>
-                        <option value="codename">Codename (login id)</option>
                         <option value="personal_email">Personal email</option>
                         <option value="personal_mobile">Personal mobile</option>
                         <option value="official_email">Official email</option>

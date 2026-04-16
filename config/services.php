@@ -50,4 +50,41 @@ return [
         'notify_project_status_changed' => filter_var(env('TELEGRAM_NOTIFY_PROJECT_STATUS_CHANGED', true), FILTER_VALIDATE_BOOL),
     ],
 
+    'onboarding' => [
+        'link_ttl_hours' => (int) env('ONBOARDING_LINK_TTL_HOURS', 72),
+        'contract_link_ttl_hours' => (int) env('ONBOARDING_CONTRACT_LINK_TTL_HOURS', 120),
+    ],
+
+    'zoho_sign' => [
+        /** API root, e.g. https://sign.zoho.in/api/v1 */
+        'base_url' => rtrim((string) env('ZOHO_SIGN_BASE_URL', 'https://sign.zoho.in/api/v1'), '/'),
+        'client_id' => env('ZOHO_SIGN_CLIENT_ID'),
+        'client_secret' => env('ZOHO_SIGN_CLIENT_SECRET'),
+        'redirect_uri' => env('ZOHO_SIGN_REDIRECT_URI'),
+        'accounts_url' => env('ZOHO_ACCOUNTS_BASE_URL', env('ZOHO_ACCOUNTS_URL', env('ZOHO_ACCOUNTS_SERVER', 'https://accounts.zoho.in'))),
+        'oauth_token_url' => env('ZOHO_SIGN_OAUTH_TOKEN_URL'),
+        'refresh_token' => env('ZOHO_SIGN_REFRESH_TOKEN', env('ZOHO_REFRESH_TOKEN')),
+        'webhook_secret' => env('ZOHO_SIGN_WEBHOOK_SECRET'),
+        'api_domain' => env('ZOHO_SIGN_API_DOMAIN', env('ZOHO_API_DOMAIN', 'https://www.zohoapis.in')),
+        'default_request_notes' => env('ZOHO_SIGN_DEFAULT_NOTES', 'Please review and sign your employment agreement.'),
+        'request_expiration_days' => (int) env('ZOHO_SIGN_REQUEST_EXPIRATION_DAYS', 30),
+        'email_reminders' => filter_var(env('ZOHO_SIGN_EMAIL_REMINDERS', true), FILTER_VALIDATE_BOOL),
+        'reminder_period_days' => (int) env('ZOHO_SIGN_REMINDER_PERIOD_DAYS', 3),
+        'verify_recipient' => filter_var(env('ZOHO_SIGN_VERIFY_RECIPIENT', false), FILTER_VALIDATE_BOOL),
+        /** Optional second signer (sequential after employee). */
+        'company_signatory_enabled' => filter_var(env('ZOHO_SIGN_COMPANY_SIGNATORY_ENABLED', false), FILTER_VALIDATE_BOOL),
+        'company_signatory_name' => env('ZOHO_SIGN_COMPANY_SIGNATORY_NAME'),
+        'company_signatory_email' => env('ZOHO_SIGN_COMPANY_SIGNATORY_EMAIL'),
+        /** Override page index (0-based); leave unset to use last page of the generated PDF. */
+        'signature_page_no' => env('ZOHO_SIGN_SIGNATURE_PAGE_NO'),
+        /** Signature placement for submit (PDF coordinates). */
+        'signature_field' => [
+            'x_coord' => (int) env('ZOHO_SIGN_SIGNATURE_X', 72),
+            'y_coord' => (int) env('ZOHO_SIGN_SIGNATURE_Y', 620),
+            'abs_width' => (int) env('ZOHO_SIGN_SIGNATURE_WIDTH', 160),
+            'abs_height' => (int) env('ZOHO_SIGN_SIGNATURE_HEIGHT', 28),
+        ],
+        'signature_field_secondary_y' => (int) env('ZOHO_SIGN_SIGNATURE_Y_SECONDARY', 520),
+    ],
+
 ];

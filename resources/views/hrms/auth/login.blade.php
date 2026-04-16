@@ -18,8 +18,8 @@
             <form method="post" action="{{ route('login.submit') }}" class="form-wrap">
                 @csrf
                 <div class="field">
-                    <label>Email or codename</label>
-                    <input id="login-id" name="email" type="text" value="{{ old('email') }}" required autocomplete="username">
+                    <label>Email</label>
+                    <input name="email" type="email" value="{{ old('email') }}" required autocomplete="username">
                 </div>
                 <div class="field">
                     <label>Password</label>
@@ -36,22 +36,4 @@
         </div>
     </div>
 @endsection
-
-@push('scripts')
-<script>
-    (function () {
-        const input = document.getElementById('login-id');
-        if (!input) return;
-
-        input.addEventListener('input', function () {
-            const raw = input.value.replace(/\s+/g, '');
-            if (raw.includes('@')) {
-                input.value = raw.replace(/[^A-Za-z0-9@._+-]/g, '');
-            } else {
-                input.value = raw.replace(/[^A-Za-z]/g, '');
-            }
-        });
-    })();
-</script>
-@endpush
 

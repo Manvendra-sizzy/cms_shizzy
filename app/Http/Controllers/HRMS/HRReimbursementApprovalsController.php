@@ -46,7 +46,7 @@ class HRReimbursementApprovalsController extends Controller
 
         $reimbursementRequest->load(['employeeProfile.user']);
 
-        $employeeEmail = $reimbursementRequest->employeeProfile?->user?->email;
+        $employeeEmail = $reimbursementRequest->employeeProfile?->preferredNotificationEmail();
         if (is_string($employeeEmail) && $employeeEmail !== '') {
             try {
                 Mail::to($employeeEmail)->send(new ReimbursementApprovedToEmployeeMail($reimbursementRequest));

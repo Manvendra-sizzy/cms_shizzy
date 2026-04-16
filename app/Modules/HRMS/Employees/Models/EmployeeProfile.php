@@ -9,6 +9,8 @@ use App\Models\OrganizationDesignation;
 use App\Modules\HRMS\Documents\Models\HRDocument;
 use App\Modules\HRMS\Leaves\Models\LeaveRequest;
 use App\Modules\HRMS\Payroll\Models\SalarySlip;
+use App\Services\HRMS\EmployeeLifecycleService;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -16,6 +18,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EmployeeProfile extends Model
 {
+    public const TYPE_INTERN = EmployeeLifecycleService::TYPE_INTERN;
+    public const TYPE_PERMANENT_EMPLOYEE = EmployeeLifecycleService::TYPE_PERMANENT_EMPLOYEE;
+
+    public const BADGE_INTERNSHIP_I = EmployeeLifecycleService::BADGE_INTERNSHIP_I;
+    public const BADGE_PROBATION_E = EmployeeLifecycleService::BADGE_PROBATION_E;
+    public const BADGE_PERMANENT_EMPLOYEE_PE = EmployeeLifecycleService::BADGE_PERMANENT_EMPLOYEE_PE;
+
     protected $fillable = [
         'user_id',
         'employee_id',
@@ -37,6 +46,15 @@ class EmployeeProfile extends Model
         'designation',
         'join_date',
         'status',
+        'employee_type',
+        'employee_badge',
+        'internship_period_months',
+        'internship_start_date',
+        'internship_end_date',
+        'probation_period_months',
+        'probation_start_date',
+        'probation_end_date',
+        'converted_to_permanent_at',
         'inactive_at',
         'inactive_remarks',
         'separation_type',
@@ -61,13 +79,93 @@ class EmployeeProfile extends Model
     protected $casts = [
         'join_date' => 'date',
         'joining_date' => 'date',
+        'internship_start_date' => 'date',
+        'internship_end_date' => 'date',
+        'probation_start_date' => 'date',
+        'probation_end_date' => 'date',
+        'converted_to_permanent_at' => 'datetime',
         'inactive_at' => 'date',
         'attendance_locked_at' => 'datetime',
         'attendance_unlock_at' => 'datetime',
         'last_missed_punch_out_notice_at' => 'datetime',
         'separation_effective_at' => 'date',
         'date_of_birth' => 'date',
+        'internship_period_months' => 'integer',
+        'probation_period_months' => 'integer',
+        'is_remote' => 'bool',
     ];
+
+    public function isIntern(): bool
+    {
+        return $this->employee_type === self::TYPE_INTERN;
+    }
+
+    public function isPermanentEmployee(): bool
+    {
+        return $this->employee_type === self::TYPE_PERMANENT_EMPLOYEE;
+    }
+
+    public function isOnProbation(): bool
+    {
+        if (! $this->isPermanentEmployee()) {
+            return false;
+        }
+
+        if (! $this->probation_end_date) {
+            return false;
+        }
+
+        return Carbon::today()->lt($this->probation_end_date->copy()->startOfDay());
+    }
+
+    public function hasCompletedProbation(): bool
+    {
+        if (! $this->isPermanentEmployee()) {
+            return false;
+        }
+
+        if (! $this->probation_end_date) {
+            return true;
+        }
+
+        return Carbon::today()->gte($this->probation_end_date->copy()->startOfDay());
+    }
+
+    public function hasCompletedInternship(): bool
+    {
+        if (! $this->isIntern()) {
+            return false;
+        }
+
+        if (! $this->internship_end_date) {
+            return false;
+        }
+
+        return Carbon::today()->gte($this->internship_end_date->copy()->startOfDay());
+    }
+
+    public function canBeConvertedToPermanent(): bool
+    {
+        return $this->isIntern()
+            && ($this->status ?? 'active') === 'active'
+            && $this->hasCompletedInternship();
+    }
+
+    public function badgeLabel(): string
+    {
+        $stored = (string) ($this->employee_badge ?? '');
+        if ($stored !== '') {
+            return EmployeeLifecycleService::badgeLabels()[$stored] ?? '—';
+        }
+
+        if ($this->isIntern()) {
+            return EmployeeLifecycleService::badgeLabels()[self::BADGE_INTERNSHIP_I];
+        }
+
+        return $this->hasCompletedProbation()
+            ? EmployeeLifecycleService::badgeLabels()[self::BADGE_PERMANENT_EMPLOYEE_PE]
+            : EmployeeLifecycleService::badgeLabels()[self::BADGE_PROBATION_E];
+    }
 
     public function user(): BelongsTo
     {
@@ -117,6 +215,22 @@ class EmployeeProfile extends Model
     public function salarySlips(): HasMany
     {
         return $this->hasMany(SalarySlip::class);
+    }
+
+    /**
+     * Personal email for employee-facing notifications (documents, slips, etc.).
+     * Falls back to the login/official user email when personal is missing or invalid.
+     */
+    public function preferredNotificationEmail(): ?string
+    {
+        $p = trim((string) ($this->personal_email ?? ''));
+        if ($p !== '' && filter_var($p, FILTER_VALIDATE_EMAIL)) {
+            return $p;
+        }
+
+        $this->loadMissing('user');
+
+        return $this->user?->email;
     }
 }
 

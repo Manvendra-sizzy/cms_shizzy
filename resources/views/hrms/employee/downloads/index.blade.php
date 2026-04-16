@@ -11,7 +11,6 @@
                     <thead>
                     <tr>
                         <th>Type</th>
-                        <th>Title</th>
                         <th>Issued</th>
                         <th></th>
                     </tr>
@@ -19,8 +18,7 @@
                     <tbody>
                     @foreach($documents as $doc)
                         <tr>
-                            <td class="muted">{{ $doc->type }}</td>
-                            <td><strong>{{ $doc->title }}</strong></td>
+                            <td><strong>{{ $doc->typeLabel() }}</strong></td>
                             <td class="muted">{{ optional($doc->issued_at)->format('Y-m-d') ?? '—' }}</td>
                             <td><a class="pill" href="{{ route('employee.documents.download', $doc) }}">Download</a></td>
                         </tr>
