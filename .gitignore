@@ -3,6 +3,16 @@
 /public/build
 /public/hot
 /public/storage
+
+# Platform branding / logos (keep on server or CDN only; do not commit)
+/public/favicon.ico
+/public/images/
+/public/logo.*
+/public/*logo*.png
+/public/*logo*.svg
+/public/*logo*.webp
+/public/*logo*.ico
+
 /storage/*.key
 /vendor
 .env
